@@ -1,5 +1,6 @@
-import { Compiler } from 'mind-ar/src/image-target/compiler';
+import { Compiler } from 'mind-ar/dist/mindar-image.prod.js';
 import { analyze } from './analyze.js';
+import { renderVisualization } from './visualize.js';
 
 /** @type {File[]} */
 export let uploadedFiles = [];
@@ -16,6 +17,7 @@ const progressBarContainer = document.getElementById('progress-bar-container');
 const progressBar = document.getElementById('progress-bar');
 const progressText = document.getElementById('progress-text');
 const downloadLinkContainer = document.getElementById('download-link');
+const clearAllBtn = document.getElementById('clear-all-btn');
 
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg'];
 
@@ -30,6 +32,7 @@ function handleFiles(files) {
   uploadedFiles.push(...validFiles);
   validFiles.forEach(renderPreviewItem);
   compileSection.removeAttribute('hidden');
+  clearAllBtn.removeAttribute('hidden');
 }
 
 /**
@@ -60,6 +63,7 @@ function renderPreviewItem(file) {
 
     if (uploadedFiles.length === 0) {
       compileSection.setAttribute('hidden', '');
+      clearAllBtn.setAttribute('hidden', '');
     }
   });
 
@@ -95,6 +99,33 @@ dropZone.addEventListener('click', (e) => {
   if (e.target !== fileInput) {
     fileInput.click();
   }
+});
+
+// --- Clear all button ---
+clearAllBtn.addEventListener('click', () => {
+  // Revoke all preview object URLs
+  previewList.querySelectorAll('img').forEach((img) => URL.revokeObjectURL(img.src));
+
+  // Clear state
+  uploadedFiles.length = 0;
+  lastCompiler = null;
+  previewList.innerHTML = '';
+
+  // Hide sections
+  clearAllBtn.setAttribute('hidden', '');
+  compileSection.setAttribute('hidden', '');
+  document.getElementById('report-section').hidden = true;
+
+  // Reset progress bar and download link
+  progressBarContainer.setAttribute('hidden', '');
+  progressBar.style.width = '0%';
+  progressText.textContent = '0%';
+  downloadLinkContainer.setAttribute('hidden', '');
+  downloadLinkContainer.innerHTML = '';
+
+  // Clear visualization
+  const vizContainer = document.getElementById('visualization');
+  if (vizContainer) vizContainer.innerHTML = '';
 });
 
 // --- Image loading helper ---
@@ -159,6 +190,7 @@ compileBtn.addEventListener('click', async () => {
 
     const fileNames = uploadedFiles.map(f => f.name);
     const result = analyze(compiler);
+    renderVisualization(document.getElementById('visualization'), compiler, result, fileNames);
     renderReport(result, fileNames);
     document.getElementById('report-section').hidden = false;
   } catch (err) {
