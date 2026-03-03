@@ -1,5 +1,7 @@
 # MindAR 特徵點分散度分析工具
 
+**[English](./README.en.md)**
+
 ## 背景
 
 我們使用 [MindAR](https://github.com/hiukim/mind-ar-js) 做圖像辨識，需要將多張海報圖片編譯成一個 `.mind` 檔。每張海報對應一個 target index，當相機對準某張海報時，應該只觸發該海報的 index，不能誤觸其他海報。
