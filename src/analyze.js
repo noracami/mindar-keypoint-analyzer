@@ -7,6 +7,26 @@
  */
 
 /**
+ * Compute the Hamming distance between two FREAK descriptors.
+ * Each descriptor is an array of 32-bit integers (length 21, packing 666 bits).
+ */
+export function hammingDistance(v1, v2) {
+  let d = 0;
+  for (let i = 0; i < v1.length; i++) {
+    let x = (v1[i] ^ v2[i]) >>> 0;
+    x = x - ((x >> 1) & 0x55555555);
+    x = ((x >> 2) & 0x33333333) + (x & 0x33333333);
+    x = ((x >> 4) + x) & 0x0F0F0F0F;
+    x = ((x >> 8) + x) & 0x00FF00FF;
+    x = ((x >> 16) + x) & 0x0000FFFF;
+    d += x;
+  }
+  return d;
+}
+export const MAX_HAMMING_BITS = 666;
+export const DESCRIPTOR_THRESHOLD = 0.4;
+
+/**
  * Extract keypoint coordinates from the MindAR compiler's internal data structure.
  * Normalizes coordinates to the 0–1 range based on each target's image dimensions.
  *
@@ -25,6 +45,7 @@ function extractKeypoints(compiler) {
     const keypoints = rawPoints.map(p => ({
       x: p.x / width,
       y: p.y / height,
+      descriptors: p.descriptors,
     }));
 
     return { index, width, height, keypoints };
@@ -41,12 +62,14 @@ function extractKeypoints(compiler) {
  * @returns {number}
  */
 function overlapCount(kpA, kpB, threshold) {
+  const descThreshold = MAX_HAMMING_BITS * DESCRIPTOR_THRESHOLD;
   let count = 0;
   for (const a of kpA) {
     for (const b of kpB) {
       const dx = a.x - b.x;
       const dy = a.y - b.y;
-      if (Math.sqrt(dx * dx + dy * dy) < threshold) {
+      if (Math.sqrt(dx * dx + dy * dy) < threshold
+          && hammingDistance(a.descriptors, b.descriptors) < descThreshold) {
         count++;
         break;
       }
@@ -64,7 +87,7 @@ function overlapCount(kpA, kpB, threshold) {
  * @param {number} [threshold=0.03]
  * @returns {number[][]}
  */
-function computeOverlapMatrix(targets, threshold = 0.03) {
+function computeOverlapMatrix(targets, threshold = 0.01) {
   const n = targets.length;
   const matrix = Array.from({ length: n }, () => new Array(n).fill(0));
 
@@ -87,7 +110,8 @@ function computeOverlapMatrix(targets, threshold = 0.03) {
  * @param {number} [threshold=0.03]
  * @returns {{ index: number, total: number, unique: number, shared: number, uniqueRate: number }[]}
  */
-function computeUniqueness(targets, threshold = 0.03) {
+function computeUniqueness(targets, threshold = 0.01) {
+  const descThreshold = MAX_HAMMING_BITS * DESCRIPTOR_THRESHOLD;
   return targets.map((target, i) => {
     let shared = 0;
     for (const kp of target.keypoints) {
@@ -97,7 +121,8 @@ function computeUniqueness(targets, threshold = 0.03) {
         for (const other of targets[j].keypoints) {
           const dx = kp.x - other.x;
           const dy = kp.y - other.y;
-          if (Math.sqrt(dx * dx + dy * dy) < threshold) {
+          if (Math.sqrt(dx * dx + dy * dy) < threshold
+              && hammingDistance(kp.descriptors, other.descriptors) < descThreshold) {
             isShared = true;
             break;
           }
