@@ -1,10 +1,20 @@
+import { Compiler } from 'mind-ar/src/image-target/compiler';
+
 /** @type {File[]} */
 export let uploadedFiles = [];
+
+/** @type {Compiler | null} */
+export let lastCompiler = null;
 
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
 const previewList = document.getElementById('preview-list');
 const compileSection = document.getElementById('compile-section');
+const compileBtn = document.getElementById('compile-btn');
+const progressBarContainer = document.getElementById('progress-bar-container');
+const progressBar = document.getElementById('progress-bar');
+const progressText = document.getElementById('progress-text');
+const downloadLinkContainer = document.getElementById('download-link');
 
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg'];
 
@@ -83,5 +93,75 @@ dropZone.addEventListener('drop', (e) => {
 dropZone.addEventListener('click', (e) => {
   if (e.target !== fileInput) {
     fileInput.click();
+  }
+});
+
+// --- Image loading helper ---
+
+/**
+ * Load a File object as an HTMLImageElement.
+ * @param {File} file
+ * @returns {Promise<HTMLImageElement>}
+ */
+async function loadImage(file) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+// --- Compile button ---
+
+compileBtn.addEventListener('click', async () => {
+  if (uploadedFiles.length === 0) return;
+
+  // Disable button and show progress bar
+  compileBtn.disabled = true;
+  progressBarContainer.removeAttribute('hidden');
+  downloadLinkContainer.setAttribute('hidden', '');
+  progressBar.style.width = '0%';
+  progressText.textContent = '0%';
+
+  try {
+    // Load all uploaded files as HTMLImageElement
+    const images = await Promise.all(uploadedFiles.map(loadImage));
+
+    // Create compiler and compile
+    const compiler = new Compiler();
+    await compiler.compileImageTargets(images, (progress) => {
+      // progress is 0–100
+      const pct = Math.round(progress);
+      progressBar.style.width = `${pct}%`;
+      progressText.textContent = `${pct}%`;
+    });
+
+    // Store the compiler instance at module scope for Task 4 (analyze.js)
+    lastCompiler = compiler;
+
+    // Export .mind file and create download link
+    const buffer = compiler.exportData();
+    const blob = new Blob([buffer]);
+    const url = URL.createObjectURL(blob);
+
+    downloadLinkContainer.innerHTML = '';
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'targets.mind';
+    a.textContent = '下載 targets.mind';
+    downloadLinkContainer.appendChild(a);
+    downloadLinkContainer.removeAttribute('hidden');
+
+    // Ensure progress shows 100%
+    progressBar.style.width = '100%';
+    progressText.textContent = '100%';
+
+    // TODO: const result = analyze(compiler);
+    // TODO: renderReport(result, fileNames);
+  } catch (err) {
+    console.error('編譯失敗:', err);
+    progressText.textContent = '編譯失敗，請查看 Console';
+  } finally {
+    compileBtn.disabled = false;
   }
 });
