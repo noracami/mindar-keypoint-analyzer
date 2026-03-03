@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindAR 特徵點分散度分析</title>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+  <main>
+    <h1>MindAR 特徵點分散度分析</h1>
+
+    <!-- Step 1: 上傳 -->
+    <section id="upload-section">
+      <h2>1. 上傳海報圖片</h2>
+      <div id="drop-zone">
+        <p>拖放圖片到這裡，或</p>
+        <input type="file" id="file-input" multiple accept="image/png,image/jpeg">
+      </div>
+      <div id="preview-list"></div>
+    </section>
+
+    <!-- Step 2: 編譯 -->
+    <section id="compile-section" hidden>
+      <h2>2. 編譯 .mind 檔</h2>
+      <button id="compile-btn">開始編譯</button>
+      <div id="progress-bar-container" hidden>
+        <div id="progress-bar"></div>
+        <span id="progress-text">0%</span>
+      </div>
+      <div id="download-link" hidden></div>
+    </section>
+
+    <!-- Step 3 & 4: 分析報告 -->
+    <section id="report-section" hidden>
+      <h2>3. 分析報告</h2>
+      <div id="summary-table"></div>
+      <div id="overlap-matrix"></div>
+      <details id="json-section">
+        <summary>JSON 原始資料</summary>
+        <div id="json-actions">
+          <button id="copy-json-btn">複製</button>
+          <button id="download-json-btn">下載 JSON</button>
+        </div>
+        <pre id="json-output"></pre>
+      </details>
+    </section>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

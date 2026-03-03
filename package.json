@@ -1,0 +1,22 @@
+{
+  "name": "mindar-keypoint-analyzer",
+  "version": "1.0.0",
+  "description": "## 背景",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mind-ar": "^1.2.5"
+  },
+  "devDependencies": {
+    "vite": "^6.4.1"
+  }
+}
