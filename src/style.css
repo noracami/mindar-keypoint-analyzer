@@ -11,6 +11,17 @@ h1 { margin-bottom: 1.5rem; }
 h2 { margin: 1.5rem 0 0.75rem; }
 section { margin-bottom: 2rem; }
 
+/* Buttons */
+button {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 4px;
+}
+button:hover { background: #f5f5f5; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* Upload drop zone */
 #drop-zone {
   border: 2px dashed #ccc;
@@ -78,6 +89,29 @@ th, td {
 }
 th {
   background: #f5f5f5;
+}
+
+/* Progress bar */
+#progress-bar-container {
+  background: #eee;
+  border-radius: 4px;
+  height: 24px;
+  margin: 0.5rem 0;
+  position: relative;
+}
+#progress-bar {
+  background: #4caf50;
+  height: 100%;
+  border-radius: 4px;
+  width: 0%;
+  transition: width 0.3s;
+}
+#progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.85rem;
 }
 
 /* JSON section */

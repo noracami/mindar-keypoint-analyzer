@@ -276,16 +276,16 @@ function renderReport(result, fileNames) {
   const jsonOutput = document.getElementById('json-output');
   jsonOutput.textContent = jsonStr;
 
-  document.getElementById('copy-json-btn').addEventListener('click', () => {
+  document.getElementById('copy-json-btn').onclick = () => {
     navigator.clipboard.writeText(jsonStr).then(() => {
       const btn = document.getElementById('copy-json-btn');
       const original = btn.textContent;
       btn.textContent = '已複製！';
       setTimeout(() => { btn.textContent = original; }, 1500);
     });
-  });
+  };
 
-  document.getElementById('download-json-btn').addEventListener('click', () => {
+  document.getElementById('download-json-btn').onclick = () => {
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -293,5 +293,5 @@ function renderReport(result, fileNames) {
     a.download = 'analysis.json';
     a.click();
     URL.revokeObjectURL(url);
-  });
+  };
 }
