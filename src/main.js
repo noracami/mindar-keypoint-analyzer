@@ -1,4 +1,5 @@
 import { Compiler } from 'mind-ar/src/image-target/compiler';
+import { analyze } from './analyze.js';
 
 /** @type {File[]} */
 export let uploadedFiles = [];
@@ -156,8 +157,10 @@ compileBtn.addEventListener('click', async () => {
     progressBar.style.width = '100%';
     progressText.textContent = '100%';
 
-    // TODO: const result = analyze(compiler);
-    // TODO: renderReport(result, fileNames);
+    const fileNames = uploadedFiles.map(f => f.name);
+    const result = analyze(compiler);
+    renderReport(result, fileNames);
+    document.getElementById('report-section').hidden = false;
   } catch (err) {
     console.error('編譯失敗:', err);
     progressText.textContent = '編譯失敗，請查看 Console';
@@ -165,3 +168,130 @@ compileBtn.addEventListener('click', async () => {
     compileBtn.disabled = false;
   }
 });
+
+// --- Report rendering ---
+
+/**
+ * Render the analysis report: summary table, overlap matrix, and JSON export.
+ * @param {{ targets: object[], matrix: number[][], uniqueness: object[] }} result
+ * @param {string[]} fileNames
+ */
+function renderReport(result, fileNames) {
+  const { targets, matrix, uniqueness } = result;
+
+  // --- 1. Summary table ---
+  const summaryContainer = document.getElementById('summary-table');
+  summaryContainer.innerHTML = '';
+
+  const summaryTable = document.createElement('table');
+  const summaryHead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  ['圖片', '特徵點總數', '獨有數', '共用數', '獨有率 (%)'].forEach((text) => {
+    const th = document.createElement('th');
+    th.textContent = text;
+    headRow.appendChild(th);
+  });
+  summaryHead.appendChild(headRow);
+  summaryTable.appendChild(summaryHead);
+
+  const summaryBody = document.createElement('tbody');
+  uniqueness.forEach((u, i) => {
+    const tr = document.createElement('tr');
+
+    const tdName = document.createElement('td');
+    tdName.textContent = fileNames[i] || `Image ${i}`;
+    tr.appendChild(tdName);
+
+    const tdTotal = document.createElement('td');
+    tdTotal.textContent = u.total;
+    tr.appendChild(tdTotal);
+
+    const tdUnique = document.createElement('td');
+    tdUnique.textContent = u.unique;
+    tr.appendChild(tdUnique);
+
+    const tdShared = document.createElement('td');
+    tdShared.textContent = u.shared;
+    tr.appendChild(tdShared);
+
+    const tdRate = document.createElement('td');
+    tdRate.textContent = Math.round(u.uniqueRate * 100) + '%';
+    if (u.uniqueRate > 0.5) {
+      tdRate.style.background = '#d4edda';
+    } else if (u.uniqueRate >= 0.3) {
+      tdRate.style.background = '#fff3cd';
+    } else {
+      tdRate.style.background = '#f8d7da';
+    }
+    tr.appendChild(tdRate);
+
+    summaryBody.appendChild(tr);
+  });
+  summaryTable.appendChild(summaryBody);
+  summaryContainer.appendChild(summaryTable);
+
+  // --- 2. Overlap matrix ---
+  const matrixContainer = document.getElementById('overlap-matrix');
+  matrixContainer.innerHTML = '';
+
+  const matrixTable = document.createElement('table');
+  const matrixHead = document.createElement('thead');
+  const matrixHeadRow = document.createElement('tr');
+
+  // Top-left corner cell (empty)
+  const cornerTh = document.createElement('th');
+  matrixHeadRow.appendChild(cornerTh);
+
+  fileNames.forEach((name) => {
+    const th = document.createElement('th');
+    th.textContent = name;
+    matrixHeadRow.appendChild(th);
+  });
+  matrixHead.appendChild(matrixHeadRow);
+  matrixTable.appendChild(matrixHead);
+
+  const matrixBody = document.createElement('tbody');
+  matrix.forEach((row, i) => {
+    const tr = document.createElement('tr');
+
+    const rowHeader = document.createElement('th');
+    rowHeader.textContent = fileNames[i] || `Image ${i}`;
+    tr.appendChild(rowHeader);
+
+    row.forEach((val) => {
+      const td = document.createElement('td');
+      td.textContent = val;
+      tr.appendChild(td);
+    });
+
+    matrixBody.appendChild(tr);
+  });
+  matrixTable.appendChild(matrixBody);
+  matrixContainer.appendChild(matrixTable);
+
+  // --- 3. JSON section ---
+  const jsonData = { targets, matrix, uniqueness };
+  const jsonStr = JSON.stringify(jsonData, null, 2);
+
+  const jsonOutput = document.getElementById('json-output');
+  jsonOutput.textContent = jsonStr;
+
+  document.getElementById('copy-json-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(jsonStr).then(() => {
+      const btn = document.getElementById('copy-json-btn');
+      const original = btn.textContent;
+      btn.textContent = '已複製！';
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    });
+  });
+
+  document.getElementById('download-json-btn').addEventListener('click', () => {
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'analysis.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
