@@ -1,0 +1,6 @@
+name = "mindar-keypoint-analyzer"
+compatibility_date = "2024-12-01"
+
+[[r2_buckets]]
+binding = "MIND_BUCKET"
+bucket_name = "mindar-mind-files"
