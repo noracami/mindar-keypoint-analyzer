@@ -3,10 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AR Test Page</title>
+  <title>MindAR AR 測試</title>
+  <style>
+    body { margin: 0; overflow: hidden; font-family: sans-serif; }
+    #loading {
+      position: fixed; inset: 0; display: flex;
+      align-items: center; justify-content: center;
+      background: #000; color: #fff; font-size: 1.2rem; z-index: 9999;
+    }
+    #loading.hidden { display: none; }
+    #error {
+      position: fixed; inset: 0; display: flex;
+      align-items: center; justify-content: center;
+      background: #000; color: #f44; font-size: 1.2rem; z-index: 9999;
+    }
+    #error.hidden { display: none; }
+  </style>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 </head>
 <body>
-  <h1>AR Test Page</h1>
-  <p>Coming soon.</p>
+  <div id="loading">載入中...</div>
+  <div id="error" class="hidden"></div>
+  <script type="module" src="/src/test.js"></script>
 </body>
 </html>
