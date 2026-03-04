@@ -1,6 +1,7 @@
 import { Compiler } from 'mind-ar/dist/mindar-image.prod.js';
 import { analyze } from './analyze.js';
 import { renderVisualization } from './visualize.js';
+import QRCode from 'qrcode';
 
 /** @type {File[]} */
 export let uploadedFiles = [];
@@ -18,6 +19,11 @@ const progressBar = document.getElementById('progress-bar');
 const progressText = document.getElementById('progress-text');
 const downloadLinkContainer = document.getElementById('download-link');
 const clearAllBtn = document.getElementById('clear-all-btn');
+const testLinkSection = document.getElementById('test-link-section');
+const genTestBtn = document.getElementById('gen-test-btn');
+const testLinkResult = document.getElementById('test-link-result');
+const qrCanvas = document.getElementById('qr-canvas');
+const testUrlLink = document.getElementById('test-url');
 
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg'];
 
@@ -123,9 +129,43 @@ clearAllBtn.addEventListener('click', () => {
   downloadLinkContainer.setAttribute('hidden', '');
   downloadLinkContainer.innerHTML = '';
 
+  // Reset test link section
+  testLinkSection.setAttribute('hidden', '');
+  testLinkResult.setAttribute('hidden', '');
+
   // Clear visualization
   const vizContainer = document.getElementById('visualization');
   if (vizContainer) vizContainer.innerHTML = '';
+});
+
+// --- Generate test link button ---
+genTestBtn.addEventListener('click', async () => {
+  if (!lastCompiler) return;
+  genTestBtn.disabled = true;
+  genTestBtn.textContent = '上傳中...';
+
+  try {
+    const buffer = lastCompiler.exportData();
+    const res = await fetch('/api/mind', {
+      method: 'POST',
+      body: buffer,
+    });
+    if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+    const { id } = await res.json();
+
+    const testPageUrl = `${window.location.origin}/test.html?id=${id}`;
+    testUrlLink.href = testPageUrl;
+    testUrlLink.textContent = testPageUrl;
+
+    await QRCode.toCanvas(qrCanvas, testPageUrl, { width: 200 });
+    testLinkResult.removeAttribute('hidden');
+  } catch (err) {
+    console.error('產生測試連結失敗:', err);
+    alert('產生測試連結失敗：' + err.message);
+  } finally {
+    genTestBtn.disabled = false;
+    genTestBtn.textContent = '產生測試連結';
+  }
 });
 
 // --- Image loading helper ---
@@ -183,6 +223,7 @@ compileBtn.addEventListener('click', async () => {
     a.textContent = '下載 targets.mind';
     downloadLinkContainer.appendChild(a);
     downloadLinkContainer.removeAttribute('hidden');
+    testLinkSection.removeAttribute('hidden');
 
     // Ensure progress shows 100%
     progressBar.style.width = '100%';
