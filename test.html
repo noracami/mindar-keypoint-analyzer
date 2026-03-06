@@ -18,13 +18,23 @@
       background: #000; color: #f44; font-size: 1.2rem; z-index: 9999;
     }
     #error.hidden { display: none; }
+    #stats {
+      position: fixed; top: 0; left: 0; right: 0;
+      padding: 8px 12px; background: rgba(0,0,0,0.7);
+      color: #fff; font-size: 0.85rem; z-index: 9998;
+      font-family: monospace; display: none;
+    }
+    #stats.visible { display: block; }
+    #stats .label { color: #aaa; }
+    #stats .found { color: #4f4; }
+    #stats .lost { color: #f44; }
+    .a-enter-vr { display: none !important; }
   </style>
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 </head>
 <body>
   <div id="loading">載入中...</div>
   <div id="error" class="hidden"></div>
+  <div id="stats"></div>
   <script type="module" src="/src/test.js"></script>
 </body>
 </html>

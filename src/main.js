@@ -153,7 +153,9 @@ genTestBtn.addEventListener('click', async () => {
     if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
     const { id } = await res.json();
 
-    const testPageUrl = `${window.location.origin}/test.html?id=${id}`;
+    const printWidth = document.getElementById('print-width').value;
+    let testPageUrl = `${window.location.origin}/test.html?id=${id}`;
+    if (printWidth) testPageUrl += `&w=${printWidth}`;
     testUrlLink.href = testPageUrl;
     testUrlLink.textContent = testPageUrl;
 
