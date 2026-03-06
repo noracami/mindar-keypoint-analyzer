@@ -14,7 +14,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mind-ar": "^1.2.5",
+    "aframe": "^1.5.0",
+    "mind-ar": "https://github.com/noracami/mind-ar-js/releases/download/v1.2.5-best-match/mind-ar-1.2.5.tgz",
     "qrcode": "^1.5.4"
   },
   "devDependencies": {

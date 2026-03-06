@@ -1,3 +1,6 @@
+import 'aframe';
+import 'mind-ar/dist/mindar-image-aframe.prod.js';
+
 async function init() {
   const loadingEl = document.getElementById('loading');
   const errorEl = document.getElementById('error');
